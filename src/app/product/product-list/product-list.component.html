@@ -1,0 +1,28 @@
+<div class="container">
+  <h2>Product Table</h2>
+  <p>The .table class adds basic styling (light padding and only horizontal dividers) to a table:</p>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Id</th>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Description</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let product of products">
+      <td>{{product.id}}</td>
+      <td>{{product.name}}</td>
+      <td>{{product.price}}</td>
+      <td>{{product.description}}</td>
+      <td>
+        <a type="button" class="btn btn-warning" [routerLink]="['/product/edit',product.id]">Edit</a>
+        <a type="button" class="btn btn-danger" [routerLink]="['/product/delete',product.id]">Delete</a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
