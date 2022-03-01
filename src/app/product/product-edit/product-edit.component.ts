@@ -2,6 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {ProductService} from "../../service/product.service";
 import {ActivatedRoute, ParamMap} from "@angular/router";
+import {CategoryService} from "../../service/category.service";
+import {Category} from "../../model/category";
 
 @Component({
   selector: 'app-product-edit',
@@ -11,38 +13,49 @@ import {ActivatedRoute, ParamMap} from "@angular/router";
 export class ProductEditComponent implements OnInit {
   productForm!: FormGroup;
   id!: number;
+  categories: Category[] = [];
 
   constructor(private productService: ProductService,
-              private activatedRoute: ActivatedRoute) {
+              private activatedRoute: ActivatedRoute,
+              private categoryService: CategoryService) {
     this.activatedRoute.paramMap.subscribe((paramMap: ParamMap) => {
       // @ts-ignore
       this.id = +paramMap.get('id');
-      console.log(this.id)
-      const product = this.getProduct(this.id);
-      this.productForm = new FormGroup({
-        // @ts-ignore
-        id: new FormControl(product.id),
-        // @ts-ignore
-        name: new FormControl(product.name, Validators.required),
-        // @ts-ignore
-        price: new FormControl(product.price, Validators.required),
-        // @ts-ignore
-        description: new FormControl(product.description, Validators.required)
-      });
+      this.getProduct(this.id);
     });
   }
 
   ngOnInit() {
+    this.getCategoryList();
+  }
+
+  getCategoryList() {
+    return this.categoryService.getAll().subscribe(categories => {
+      this.categories = categories;
+    })
   }
 
   getProduct(id: number) {
-    return this.productService.findById(id);
+    return this.productService.findById(id).subscribe(product =>{
+      console.log(product);
+      this.productForm = new FormGroup({
+        'name': new FormControl(product.name, Validators.required),
+        'price': new FormControl(product.price, Validators.required),
+        'description': new FormControl(product.description, Validators.required),
+        'category': new FormControl(product.category?.name, Validators.required),
+        'img': new FormControl(product.img)
+      });
+    });
   }
 
   updateProduct(id: number) {
     const product = this.productForm.value;
-    this.productService.updateProduct(id, product);
-    alert('Updated!');
+    this.productService.updateProduct(id, product).subscribe(() => {
+      alert('UPDATED!');
+    }, error => {
+      console.log(error);
+    });
+
   }
 
 }

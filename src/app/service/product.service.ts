@@ -1,62 +1,37 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
 import {Product} from "../model/product";
+import {environment} from "../../environments/environment";
+
+const API_URL = `${environment.apiUrl}`
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  products: Product[] = [{
-    id: 1,
-    name: 'IPhone 12',
-    price: 2400000,
-    description: 'New'
-  }, {
-    id: 2,
-    name: 'IPhone 11',
-    price: 1560000,
-    description: 'Like new'
-  }, {
-    id: 3,
-    name: 'IPhone X',
-    price: 968000,
-    description: '97%'
-  }, {
-    id: 4,
-    name: 'IPhone 8',
-    price: 7540000,
-    description: '98%'
-  }, {
-    id: 5,
-    name: 'IPhone 11 Pro',
-    price: 1895000,
-    description: 'Like new'
-  }];
-  constructor() { }
 
-  getAll() {
-    return this.products;
+  constructor(private http: HttpClient) {
   }
 
-  saveProduct(product: Product) {
-    this.products.push(product);
+  getAll(): Observable<any> {
+    return this.http.get<any>(API_URL + `/products/`);
   }
 
-  findById (id: number) {
-    return this.products.find(product => product.id === id)
-    }
-
-  updateProduct(id: number, product: Product) {
-    for (let i = 0; i < this.products.length; i++) {
-      if (this.products[i].id === id) {
-        this.products[i] = product;
-      }
-    }
+  saveProduct(product: Product): Observable<any> {
+    return this.http.post<any>(API_URL + `/products/add`, product);
   }
 
-  deleteProduct(id: number) {
-    this.products = this.products.filter(product => {
-      return product.id !== id;
-    });
+  findById(id: number): Observable<any> {
+    return this.http.get<any>(API_URL + `/products/${id}`);
+  }
+
+  updateProduct(id: number, product: Product): Observable<any> {
+    return this.http.put<any>(API_URL + `/products/edit/${id}`, product);
+  }
+
+  deleteProduct(id: number): Observable<any> {
+    return this.http.delete<any>(API_URL + `/products/delete/${id}`);
   }
 
 }

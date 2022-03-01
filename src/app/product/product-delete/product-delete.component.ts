@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import {FormControl, FormGroup} from "@angular/forms";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {ProductService} from "../../service/product.service";
-import {ActivatedRoute, ParamMap} from "@angular/router";
+import {ActivatedRoute, ParamMap, Router} from "@angular/router";
+import {CategoryService} from "../../service/category.service";
+import {Category} from "../../model/category";
 
 @Component({
   selector: 'app-product-delete',
@@ -11,36 +13,46 @@ import {ActivatedRoute, ParamMap} from "@angular/router";
 export class ProductDeleteComponent implements OnInit {
   productForm!: FormGroup;
   id!: number;
+  categories : Category[] = [];
 
   constructor(private productService: ProductService,
-              private activatedRoute: ActivatedRoute) {
+              private activatedRoute: ActivatedRoute,
+              private categoryService: CategoryService,
+              private router: Router) {
     this.activatedRoute.paramMap.subscribe((paramMap: ParamMap) => {
       // @ts-ignore
       this.id = +paramMap.get('id');
-      console.log(this.id)
-      const product = this.getProduct(this.id);
-      this.productForm = new FormGroup({
-        // @ts-ignore
-        id: new FormControl(product.id),
-        // @ts-ignore
-        name: new FormControl(product.name),
-        // @ts-ignore
-        price: new FormControl(product.price),
-        // @ts-ignore
-        description: new FormControl(product.description)
-      });
+      this.getProduct(this.id)
     });
   }
 
   ngOnInit() {
+    this.getCategoryList();
   }
 
+  getCategoryList() {
+    return this.categoryService.getAll().subscribe(categories => {
+      this.categories = categories;
+    })
+  }
   getProduct(id: number) {
-    return this.productService.findById(id);
+    return this.productService.findById(id).subscribe(product =>{
+      this.productForm = new FormGroup({
+        'name': new FormControl(product.name, Validators.required),
+        'price': new FormControl(product.price, Validators.required),
+        'description': new FormControl(product.description, Validators.required),
+        'category': new FormControl(product.category?.name, Validators.required),
+        'img': new FormControl(product.img)
+      })
+    });
   }
 
   delete(id: number){
-    return this.productService.deleteProduct(id);
+    return this.productService.deleteProduct(id).subscribe(() =>{
+      this.router.navigate([`/product/list`])
+    }, error => {
+      console.log(error)
+    });
   }
 
 }
